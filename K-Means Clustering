@@ -1,0 +1,46 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+
+# Generate mock customer data
+n_samples = 1000
+age = np.random.randint(18, 70, size=n_samples)
+gender = np.random.choice(['M', 'F'], size=n_samples)
+income = np.random.randint(0, 200000, size=n_samples)
+page_views = np.random.randint(0, 1000, size=n_samples)
+purchases = np.random.randint(0, 10, size=n_samples)
+customer_data = pd.DataFrame({
+    'age': age,
+    'gender': gender,
+    'income': income,
+    'page_views': page_views,
+    'purchases': purchases
+})
+
+# Standardize the data
+scaler = StandardScaler()
+customer_data_scaled = scaler.fit_transform(customer_data[['age', 'income', 'page_views', 'purchases']])
+
+# Reduce dimensionality of data
+pca = PCA(n_components=2)
+customer_data_reduced = pca.fit_transform(customer_data_scaled)
+
+# Perform k-means clustering
+kmeans = KMeans(n_clusters=4, random_state=42)
+kmeans.fit(customer_data_reduced)
+customer_clusters = kmeans.predict(customer_data_reduced)
+
+# Evaluate the quality of the resulting clusters
+silhouette_avg = silhouette_score(customer_data_reduced, customer_clusters)
+print('Silhouette score:', silhouette_avg)
+
+# Plot the resulting clusters
+plt.scatter(customer_data_reduced[:, 0], customer_data_reduced[:, 1], c=customer_clusters, cmap='viridis')
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.title('Customer Clusters')
+plt.show()
